@@ -643,9 +643,10 @@ BrainFlowBoards::BrainFlowBoards()
         {"name", "Muse2"},
         {"sampling_rate", 256},
         {"timestamp_channel", 6},
+        {"battery_channel", 8},
         {"marker_channel", 7},
         {"package_num_channel", 0},
-        {"num_rows", 8},
+        {"num_rows", 9},
         {"eeg_channels", {1, 2, 3, 4}},
         {"eeg_names", "TP9,Fp1,Fp2,TP10"},
         {"other_channels", {5}}

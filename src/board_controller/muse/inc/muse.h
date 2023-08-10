@@ -52,4 +52,6 @@ public:
         simpleble_uuid_t service, simpleble_uuid_t characteristic, uint8_t *data, size_t size);
     void peripheral_on_status (
         simpleble_uuid_t service, simpleble_uuid_t characteristic, uint8_t *data, size_t size);
+    void peripheral_on_telemetry (
+        simpleble_uuid_t service, simpleble_uuid_t characteristic, uint8_t *data, size_t size);
 };

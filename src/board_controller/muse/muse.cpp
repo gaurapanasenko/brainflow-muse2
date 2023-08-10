@@ -74,6 +74,12 @@ void peripheral_on_right_aux (simpleble_uuid_t service, simpleble_uuid_t charact
     ((Muse *)(board))->peripheral_on_eeg (service, characteristic, data, size, 4);
 }
 
+void peripheral_on_telemetry (simpleble_uuid_t service, simpleble_uuid_t characteristic,
+    uint8_t *data, size_t size, void *board)
+{
+    ((Muse *)(board))->peripheral_on_telemetry (service, characteristic, data, size);
+}
+
 
 Muse::Muse (int board_id, struct BrainFlowInputParams params) : BLELibBoard (board_id, params)
 {
@@ -368,6 +374,23 @@ int Muse::prepare_session ()
                 {
                     if (simpleble_peripheral_notify (muse_peripheral, service.uuid,
                             service.characteristics[j].uuid, ::peripheral_on_ppg2,
+                            (void *)this) == SIMPLEBLE_SUCCESS)
+                    {
+                        notified_characteristics.push_back (
+                            std::pair<simpleble_uuid_t, simpleble_uuid_t> (
+                                service.uuid, service.characteristics[j].uuid));
+                    }
+                    else
+                    {
+                        safe_logger (spdlog::level::err, "Failed to notify for {} {}",
+                            service.uuid.value, service.characteristics[j].uuid.value);
+                        res = (int)BrainFlowExitCodes::GENERAL_ERROR;
+                    }
+                }
+                if (strcmp (service.characteristics[j].uuid.value, MUSE_GATT_ATTR_TELEMETRY) == 0)
+                {
+                    if (simpleble_peripheral_notify (muse_peripheral, service.uuid,
+                            service.characteristics[j].uuid, ::peripheral_on_telemetry,
                             (void *)this) == SIMPLEBLE_SUCCESS)
                     {
                         notified_characteristics.push_back (
@@ -815,5 +838,22 @@ void Muse::peripheral_on_ppg (simpleble_uuid_t service, simpleble_uuid_t charact
         }
         last_ppg_timestamp = current_timestamp;
         std::fill (new_ppg_data.begin (), new_ppg_data.end (), false);
+    }
+}
+
+void Muse::peripheral_on_telemetry (
+    simpleble_uuid_t service, simpleble_uuid_t characteristic, uint8_t *data, size_t size)
+{
+    std::lock_guard<std::mutex> callback_guard (callback_lock);
+    if (size != 8)
+    {
+        safe_logger (spdlog::level::warn, "unknown size for ppg callback: {}", size);
+        return;
+    }
+
+    for (int i = 0; i < 12; i++)
+    {
+        double battery = (double)cast_16bit_to_int32 ((unsigned char *)&data[2]);
+        current_default_buf[i][board_descr["default"]["battery_channel"].get<int> ()] = battery;
     }
 }
