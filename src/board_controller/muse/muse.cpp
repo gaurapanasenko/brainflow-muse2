@@ -853,7 +853,7 @@ void Muse::peripheral_on_telemetry (
 
     for (int i = 0; i < 12; i++)
     {
-        double battery = (double)cast_16bit_to_int32 ((unsigned char *)&data[2]);
+        double battery = ((double)((data[2] << 8) | data[3])) / 512;
         current_default_buf[i][board_descr["default"]["battery_channel"].get<int> ()] = battery;
     }
 }
