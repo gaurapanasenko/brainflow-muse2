@@ -845,9 +845,9 @@ void Muse::peripheral_on_telemetry (
     simpleble_uuid_t service, simpleble_uuid_t characteristic, uint8_t *data, size_t size)
 {
     std::lock_guard<std::mutex> callback_guard (callback_lock);
-    if (size != 8)
+    if (size != 20)
     {
-        safe_logger (spdlog::level::warn, "unknown size for ppg callback: {}", size);
+        safe_logger (spdlog::level::warn, "unknown size for telemetry callback: {}", size);
         return;
     }
 
